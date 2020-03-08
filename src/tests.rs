@@ -40,3 +40,34 @@ fn test_can_harddrop() {
     piece.position = (6, 22);
     assert!(can_harddrop(piece, &field) == true);
 }
+
+#[test]
+fn test_unused_points() {
+    let piece = Piece {
+        piece_type: PieceType::I,
+        position: (1, 1),
+        rotation: Rotation::Normal,
+    };
+
+    let mut pieces = Vec::new();
+    pieces.push(piece);
+
+    let mut field = [[0; 10]; 24];
+    assert!(find_unused_points(&pieces, &field).len() == 0);
+    
+    field[1][5] = 1;
+    assert!(find_unused_points(&pieces, &field).len() == 0);
+
+    field[0][0] = 2;
+    let points = find_unused_points(&pieces, &field);
+    assert!(points.len() == 1);
+    assert!(points[0] == (0, 0));
+    field[0][0] = 0;
+
+    field[1][2] = 3;
+    field[2][2] = 3;
+    field[3][2] = 3;
+    field[4][2] = 3;
+
+    assert!(find_unused_points(&pieces, &field).len() == 0);
+}

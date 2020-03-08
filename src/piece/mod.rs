@@ -135,13 +135,25 @@ pub fn color_field_to_pieces(field: FieldMatrix)
 
     // parse piece possibilies for overlapping pieces
     let ambiguous_points = find_ambiguous_points(&piece_possibilities);
+    println!("{:?}", piece_possibilities);
     if ambiguous_points.len() > 0 {
         println!("Ambiguous points at:");
         for point in ambiguous_points.iter() {
             let (x, y) = point;
-            println!("x: {}, y: {}", x, 23 - y);
+            println!("x: {}, y: {}", x, y);
         }
         return Err("Ambiguous points")
+    }
+
+    // points with no piece covering
+    let unused_points = find_unused_points(&piece_possibilities, &field); 
+    if unused_points.len() > 0 {
+        println!("Unused points at:");
+        for point in unused_points.iter() {
+            let (x, y) = point;
+            println!("x: {}, y: {}", x, y);
+        }
+        return Err("Unused points points")
     }
 
     Ok(piece_possibilities)
@@ -154,26 +166,45 @@ fn find_ambiguous_points(pieces: &Vec<Piece>) -> Vec<(usize, usize)> {
             temp_field[*y][*x] += 1;
         }
     }
-    let mut ambiguous_points = Vec::new();
     
-    temp_field
-        .iter()
+    temp_field.iter()
         .flatten()
         .enumerate()
         .filter(|(_, n)| **n > 1)
-        .for_each(|(i, _)| {
-            ambiguous_points.push(
-                (i % 10, i / 10),
-            )
-        });
-
-    ambiguous_points
+        .map(|(i, _)| {
+            (i % 10, i / 10)
+        })
+        .collect::<Vec<(usize, usize)>>()
 }
-/* TODO
-fn unused_points(pieces: &Vec<Piece>, field: &FieldMatrix) -> bool {
-    let test_field = field.clone();
-    
-}*/
+
+pub fn find_unused_points(pieces: &Vec<Piece>, field: &FieldMatrix) 
+    -> Vec<(usize, usize)> 
+{
+    let mut test_field = field.clone();
+
+    // get rid of grey blocks
+    for n in test_field.iter_mut().flatten().filter(|n| **n == 1) {
+        *n = 0;
+    }
+
+    //get rid of blocks used by pieces
+    for piece in pieces.iter() {
+        let block_positions = piece_block_positions(*piece).unwrap_or_default();
+        for (x, y) in block_positions.iter() {
+            test_field[*y][*x] = 0;
+        }
+    }
+
+    // any leftover blocks are unused
+    test_field.iter()
+        .flatten()
+        .enumerate()
+        .filter(|(_, n)| **n > 0)
+        .map(|(i, _)| {
+            (i % 10, i / 10)
+        })
+        .collect::<Vec<(usize, usize)>>()
+}
 
 pub fn piece_fits_over(
     piece: Piece,
