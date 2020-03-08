@@ -48,8 +48,6 @@ pub fn find_percentage(
         }
     }
 
-    //println!("{}, {}", works_count, does_not_work_count);
-
     Ok(works_count / (works_count + does_not_work_count) * 100.0)
 }
 

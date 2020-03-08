@@ -1,7 +1,9 @@
 use crate::fieldmatrix::FieldMatrix;
 use crate::field::PercentageOptions;
+use std::fmt::Write;
 
 pub mod piece_col;
+pub mod piece_percent;
 use piece_col::{PieceCollision, I, O, S, Z, L, J, T};
 
 pub fn piece_type_to_fumen_index(piece: PieceType) -> u8 {
@@ -32,7 +34,6 @@ pub fn fumen_index_to_piece_type(i: u8) -> Result<PieceType, &'static str> {
 pub trait Rotate {
     fn rotation(&mut self, rotation: Rotation);
 }
-
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum PieceType {
@@ -90,8 +91,8 @@ impl Piece {
     }
 }
 
-pub fn color_field_to_pieces(field: FieldMatrix)
-    -> Result<Vec<Piece>, &'static str> 
+pub fn color_field_to_pieces<'a>(field: FieldMatrix)
+    -> Result<Vec<Piece>, String> 
 {
     let mut piece_possibilities = Vec::new();
     let rotations = [
@@ -135,25 +136,25 @@ pub fn color_field_to_pieces(field: FieldMatrix)
 
     // parse piece possibilies for overlapping pieces
     let ambiguous_points = find_ambiguous_points(&piece_possibilities);
-    println!("{:?}", piece_possibilities);
     if ambiguous_points.len() > 0 {
-        println!("Ambiguous points at:");
+        let mut error_string = String::from("Ambiguous points at:\n");
         for point in ambiguous_points.iter() {
             let (x, y) = point;
-            println!("x: {}, y: {}", x, y);
+            writeln!(error_string, "x: {}, y: {}", x, y).unwrap();
         }
-        return Err("Ambiguous points")
+        return Err(error_string)
     }
 
     // points with no piece covering
     let unused_points = find_unused_points(&piece_possibilities, &field); 
     if unused_points.len() > 0 {
-        println!("Unused points at:");
+        let mut error_string = String::from("Unused points at:\n");
+        
         for point in unused_points.iter() {
             let (x, y) = point;
-            println!("x: {}, y: {}", x, y);
+            writeln!(error_string, "x: {}, y: {}", x, y).unwrap();
         }
-        return Err("Unused points points")
+        return Err(error_string)
     }
 
     Ok(piece_possibilities)

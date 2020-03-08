@@ -16,7 +16,6 @@ fn main() {
         .arg(Arg::with_name("tetfu")
             .short("t")
             .long("tetfu")
-            .default_value("v115@9fwhIewhIewhIewhSfAgH")
             .help("The fumen from 'harddrop.com/fumen/'")
             .required(true)
             .takes_value(true));
@@ -27,13 +26,17 @@ fn main() {
 
     let (base_field, color_field) = field::split_color(fumen_field);
 
-    let pieces = piece::color_field_to_pieces(color_field).unwrap();
-    
-    println!("{}%",
-        field::find_percentage(
-            base_field,
-            pieces,
-            field::PercentageOptions::new(),
-        ).unwrap()
-    );
+    match piece::color_field_to_pieces(color_field) {
+        Ok(pieces) => {
+            println!("{}%",
+            field::find_percentage(
+                base_field,
+                pieces,
+                field::PercentageOptions::new(),
+            ).unwrap())
+        },
+        Err(e) => {
+            println!("error: {}", e);
+        },
+    };
 }
