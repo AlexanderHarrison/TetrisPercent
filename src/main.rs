@@ -37,7 +37,7 @@ fn main() {
     let (fumen_field, _comment) = fumen::decode(
         matches.value_of("tetfu").unwrap()
     );
-
+    let (fumen_field, _) = field::discard_bottom(fumen_field);
     // todo set up to use softdrop
 
     let (base_field, color_field) = field::split_color(fumen_field);

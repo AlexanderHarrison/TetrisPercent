@@ -2,6 +2,8 @@ use crate::fieldmatrix::FieldMatrix;
 use crate::piece::{Piece, piece_can_be_placed, place_piece_on_field};
 use crate::perm_gen::generate_perm_iter;
 
+pub const BOTTOM_ROW_DISCARD_COUNT: usize = 1;
+
 #[derive(Copy, Clone)]
 pub struct PercentageOptions {
     pub hold: bool,
@@ -82,4 +84,23 @@ fn get_color(mut matrix: FieldMatrix) -> FieldMatrix {
         }
     }
     matrix
+}
+
+pub fn discard_bottom(mut field: FieldMatrix) -> (FieldMatrix, Vec<[u8; 10]>) {
+    let mut old_rows = Vec::new();
+    
+    for i in 0..BOTTOM_ROW_DISCARD_COUNT {
+        let u_index = (23 - i) as usize;
+        
+        old_rows.push(
+            field[u_index].clone()
+        );
+
+        for block in field[u_index].iter_mut() {
+            *block = 0;
+        }
+    }
+    
+
+    (field, old_rows)
 }

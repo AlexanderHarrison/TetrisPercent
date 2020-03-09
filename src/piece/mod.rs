@@ -1,5 +1,5 @@
 use crate::fieldmatrix::FieldMatrix;
-use crate::field::PercentageOptions;
+use crate::field::{PercentageOptions, BOTTOM_ROW_DISCARD_COUNT};
 use std::fmt::{self, Write, Display, Formatter};
 
 pub mod piece_col;
@@ -405,7 +405,7 @@ pub fn can_harddrop(piece: Piece, field: &FieldMatrix) -> bool {
         {
             return false
         }
-        if *y == 23 || field[*y + 1][*x] != 0 {
+        if *y == 23 - BOTTOM_ROW_DISCARD_COUNT  || field[*y + 1][*x] != 0 {
             empty_space_below_piece = false
         }
     }
@@ -458,7 +458,7 @@ pub fn impossibilites(
         let mut piece_supported = false;
         let block_positions = piece_block_positions(*piece).unwrap();
         for (x, y) in block_positions.iter() {
-            if *y == 23 {
+            if *y == 23 - BOTTOM_ROW_DISCARD_COUNT {
                 // on ground
                 piece_supported = true;
                 break
