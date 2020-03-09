@@ -50,14 +50,24 @@ fn main() {
 
     match piece::color_field_to_pieces(color_field) {
         Ok(pieces) => {
-            match field::find_percentage(
+            let impossibilities = piece::impossibilites(&pieces, &fumen_field);
+            if !impossibilities.is_empty() {
+                println!(
+                    "error: {}",
+                    piece::format_pieces(
+                        &impossibilities,
+                        "impossible to place pieces:\n"
+                    )
+                );
+                return
+            }
+
+            let percent = field::find_percentage(
                 base_field,
                 pieces,
                 options,
-            ) {
-                Ok(percent) => println!("{}%", percent),
-                Err(e) => println!("error: {}", e),
-            }
+            );
+            println!("{}%", percent);
         },
         Err(e) => println!("error: {}", e),
     };

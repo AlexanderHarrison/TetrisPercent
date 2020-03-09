@@ -448,15 +448,34 @@ fn piece_check_offset(piece_type: PieceType) -> (isize, isize) {
     }
 }
 
-pub fn impossibilites(pieces: &Vec<Piece>, field: &FieldMatrix) -> Vec<Piece> {    
+pub fn impossibilites(
+    pieces: &Vec<Piece>,
+    full_field: &FieldMatrix
+) -> Vec<Piece> {    
     let mut impossible_pieces = Vec::new();
     
     for piece in pieces.iter() {
         let mut piece_supported = false;
-        for (x, y) in piece_block_positions(*piece).unwrap().iter() {
-            if *y == 23 || field[*y + 1][*x] != 0 {
+        let block_positions = piece_block_positions(*piece).unwrap();
+        for (x, y) in block_positions.iter() {
+            if *y == 23 {
+                // on ground
                 piece_supported = true;
                 break
+            } else {
+                let below_position = (*x, *y + 1);
+                // if below_position below is not already in block_positions
+                if block_positions
+                    .iter()
+                    .position(|pos| *pos == below_position)
+                    .is_none()
+                {
+                    let (nx, ny) = below_position;
+                    if full_field[ny][nx] != 0 {
+                        piece_supported = true;
+                        break
+                    }
+                }
             }
         }
         if !piece_supported {
@@ -466,4 +485,19 @@ pub fn impossibilites(pieces: &Vec<Piece>, field: &FieldMatrix) -> Vec<Piece> {
     }
 
     impossible_pieces
+}
+
+pub fn format_pieces<'a>(pieces: &Vec<Piece>, init_err_str: &'a str) -> String {
+    let mut s = String::from(init_err_str);
+
+    for piece in pieces.iter() {
+        writeln!(
+            s, 
+            "piece: {}, position: {}, {}",
+            piece.piece_type,
+            piece.position.0,
+            piece.position.1,
+        ).unwrap();
+    }
+    s
 }
