@@ -10,11 +10,11 @@ pub struct PercentageOptions {
 }
 
 impl PercentageOptions {
-    pub fn new() -> Self {
+    pub fn new(hold: bool, soft_drop: bool, spin: bool) -> Self {
         PercentageOptions {
-            hold: false,
-            spin: false,
-            soft_drop: false,
+            hold,
+            spin,
+            soft_drop,
         }
     }
 }

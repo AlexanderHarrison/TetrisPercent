@@ -19,18 +19,34 @@ fn main() {
             .help("The fumen from 'harddrop.com/fumen/'")
             .required(true)
             .takes_value(true))
-        .arg(Arg::with_name("softdrop")
-            .short("s")
-            .long("softdrop")
-            .help("put to use softdrop");
+        .arg(Arg::with_name("no_softdrop")
+            .short("ns")
+            .long("nosoftdrop")
+            .help("put to not use softdrop when calculating"))
+        .arg(Arg::with_name("no_hold")
+            .short("nh")
+            .long("nohold")
+            .help("put to not use hold when calculating"))
+        .arg(Arg::with_name("no_rotation")
+            .short("nr")
+            .long("norotation")
+            .help("put to not use rotation/spins when calculating"))
+        .get_matches();
+        
                 
     let (fumen_field, _comment) = fumen::decode(
-        matches.get_matches().value_of("tetfu").unwrap()
+        matches.value_of("tetfu").unwrap()
     );
 
     // todo set up to use softdrop
 
     let (base_field, color_field) = field::split_color(fumen_field);
+
+    let options = field::PercentageOptions::new(
+        !matches.is_present("no_hold"),
+        !matches.is_present("no_rotation"),
+        !matches.is_present("no_softdrop"),
+    );
 
     match piece::color_field_to_pieces(color_field) {
         Ok(pieces) => {
@@ -38,7 +54,7 @@ fn main() {
             field::find_percentage(
                 base_field,
                 pieces,
-                field::PercentageOptions::new(),
+                options,
             ).unwrap())
         },
         Err(e) => {
