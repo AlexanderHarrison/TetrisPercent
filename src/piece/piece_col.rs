@@ -60,16 +60,8 @@ impl PieceCollision {
         self.cur_rotation = rot;
     }
 
-    pub fn flat_mut_iter(&mut self) -> impl Iterator<Item = &mut u8> {
-        self.data[self.rotation_i()][..self.size.pow(2)].iter_mut()
-    }
-
     pub fn flat_iter(&self) -> impl Iterator<Item = &u8> {
         self.data[self.rotation_i()][..self.size.pow(2)].iter()
-    }
-
-    pub fn flat_mut_slice(&mut self) -> &mut [u8] {
-        &mut self.data[self.rotation_i()][..self.size.pow(2)]
     }
 
     fn rotation_i(&self) -> usize {

@@ -17,16 +17,6 @@ impl PercentageOptions {
             soft_drop: false,
         }
     }
-
-    pub fn hold(mut self, hold: bool) -> Self {
-        self.hold = hold;
-        self
-    }
-
-    pub fn spin(mut self, spin: bool) -> Self {
-        self.spin = spin;
-        self
-    }
 }
 
 pub fn find_percentage(
@@ -56,13 +46,6 @@ fn permutation_works(
     piece_perm: Vec<Piece>,
     options: PercentageOptions
 ) -> bool {
-    /*if !options.hold && !options.spin {
-        
-
-        false//
-    } else {
-        false//
-    }*/
     let mut field = base_field.clone();
     for piece in piece_perm.iter() {
         if piece_can_be_placed(

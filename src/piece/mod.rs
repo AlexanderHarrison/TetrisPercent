@@ -3,7 +3,6 @@ use crate::field::PercentageOptions;
 use std::fmt::Write;
 
 pub mod piece_col;
-pub mod piece_percent;
 use piece_col::{PieceCollision, I, O, S, Z, L, J, T};
 
 pub fn piece_type_to_fumen_index(piece: PieceType) -> u8 {
@@ -76,17 +75,10 @@ impl Piece {
         piece
     }
 
-    pub fn clone_with_offset_sub(&self, dx: isize, dy: isize) -> Piece {
+    pub fn clone_with_offset(&self, dx: isize, dy: isize) -> Piece {
         let (x, y) = self.position;
         let mut new = self.clone();
         new.position = (x - dx, y - dy);
-        new
-    }
-
-    pub fn clone_with_offset_add(&self, dx: isize, dy: isize) -> Piece {
-        let (x, y) = self.position;
-        let mut new = self.clone();
-        new.position = (x + dx, y + dy);
         new
     }
 }
@@ -277,52 +269,108 @@ pub fn piece_can_be_placed(
     if can_harddrop(piece, &base_field) {
         return true
     }
-    /*
-    if options.soft_drop || options.spin {
-        let mut left_positions: Vec<Piece> = Vec::new();
-        let mut right_positions: Vec<Piece> = Vec::new();
-        let mut up_positions: Vec<Piece> = Vec::new();
-        //let mut spin_positions: Vec<Piece> = Vec::new();
+    
+    if options.soft_drop {
+        softdrop_stem_check(piece, &base_field);
+    }
+
+    false
+}
+
+fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
+    let mut left_positions: Vec<Piece> = Vec::new();
+    let mut right_positions: Vec<Piece> = Vec::new();
+    let mut stem_positions: Vec<Piece> = Vec::new();
+    stem_positions.push(base_piece);
+    //let mut spin_positions: Vec<Piece> = Vec::new();
+    
+    let mut test_piece_left = |prev_piece: Piece| -> Option<(bool, Piece)> {
+        let test_piece = prev_piece.clone_with_offset(-1, 0);
+
+        if piece_fits_over(test_piece, 0, &base_field).unwrap_or_default() {
+            if can_harddrop(test_piece, &base_field) {
+                return Some((true, test_piece))
+            }
+            left_positions.push(test_piece);
+            return Some((false, test_piece))
+        }
+        None
+    };
+
+    let mut test_piece_right = |prev_piece: Piece| -> Option<(bool, Piece)> {
+
+        let test_piece = prev_piece.clone_with_offset(1, 0);
+
+        if piece_fits_over(test_piece, 0, &base_field).unwrap_or_default() {
+            if can_harddrop(test_piece, &base_field) {
+                return Some((true, test_piece))
+            }
+            right_positions.push(test_piece);
+            return Some((false, test_piece))
+        }
+        None
+    };
+
+    let test_piece_up =  |prev_piece: Piece| -> bool {
+        let test_piece = prev_piece.clone_with_offset(0, 1);
+        piece_fits_over(test_piece, 0, &base_field).unwrap_or_default()
+    };
+
+    let mut add_piece_up = |prev_piece: Piece| -> (bool, Piece) {
+        let test_piece = prev_piece.clone_with_offset(0, 1);
+
+        if piece_fits_over(test_piece, 0, &base_field).unwrap_or_default() {
+            stem_positions.push(test_piece);
+            
+            return (true, test_piece)
+        }
+        (false, test_piece)
+    };
+
+    // add all pieces up from the base piece to stem_positions until blocked
+    // add_piece_up pushes to stem_positions
+    let mut up_piece = base_piece;
+    loop {
+        let (was_added, new_up_piece) = add_piece_up(up_piece);
+        if !was_added { break }
         
-        let test_piece_left = |prev_piece: Piece| -> Option<bool> {
+        up_piece = new_up_piece;
+    }
 
-            let test_piece = prev_piece.clone_with_offset_sub(1, 0);
+    // for each stem position push out left and right
+    // if the position can be harddropped then return true
+    // if the position can go up make another stem
+    // else continue going left and right until blocked
+    for stem_piece in stem_positions.iter() {        
+        let mut left_piece = *stem_piece;
+        while let Some((works, new_left_piece)) = test_piece_left(left_piece) {
+            if works { return true }
 
-            if piece_fits_over(test_piece, 0, &base_field) 
-            {
-                if can_harddrop(test_piece, &base_field) {
-                    return Some(true)
+            // if a new stem can be created do so
+            if test_piece_up(new_left_piece) {
+                if softdrop_stem_check(new_left_piece, &base_field) {
+                    return true
                 }
-                left_positions.push(test_piece);
-                return Some(false)
             }
-            None
-        };
 
-        let test_piece_right = |prev_piece: Piece| -> Option<bool> {
+            left_piece = new_left_piece;
+        }
 
-            let test_piece = prev_piece.clone_with_offset_add(1, 0);
+        let mut right_piece = *stem_piece;
+        while let Some((works, new_right_piece)) = test_piece_right(right_piece)
+        {
+            if works { return true }
 
-            if piece_fits_over(test_piece, 0, &base_field) {
-                if can_harddrop(test_piece, &base_field) {
-                    return Some(true)
+            // if a new stem can be created do so
+            if test_piece_up(new_right_piece) {
+                if softdrop_stem_check(new_right_piece, &base_field) {
+                    return true
                 }
-                right_positions.push(test_piece);
-                return Some(false)
             }
-            None
-        };
-
-        let add_piece_up = |prev_piece: Piece| -> bool {
-            let test_piece = prev_piece.clone_with_offset_add(0, 1);
-
-            if piece_fits_over(test_piece, 0, &base_field) {
-                up_positions.push(test_piece);
-                return true
-            }
-            false
-        };
-    }*/
+            
+            right_piece = new_right_piece;
+        }
+    }
 
     false
 }
@@ -381,4 +429,8 @@ fn piece_check_offset(piece_type: PieceType) -> (isize, isize) {
         PieceType::I => (-2, -1),
         _ => (-1, -1),
     }
+}
+
+fn can_place(w: Option<bool>) -> bool {
+    w.unwrap_or_default()
 }

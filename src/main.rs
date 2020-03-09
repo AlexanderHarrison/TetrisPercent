@@ -18,11 +18,17 @@ fn main() {
             .long("tetfu")
             .help("The fumen from 'harddrop.com/fumen/'")
             .required(true)
-            .takes_value(true));
+            .takes_value(true))
+        .arg(Arg::with_name("softdrop")
+            .short("s")
+            .long("softdrop")
+            .help("put to use softdrop");
                 
     let (fumen_field, _comment) = fumen::decode(
         matches.get_matches().value_of("tetfu").unwrap()
     );
+
+    // todo set up to use softdrop
 
     let (base_field, color_field) = field::split_color(fumen_field);
 
