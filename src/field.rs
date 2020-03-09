@@ -1,6 +1,8 @@
 use crate::fieldmatrix::FieldMatrix;
-use crate::piece::{Piece, piece_can_be_placed, place_piece_on_field};
+use crate::piece::{Piece, piece_can_be_placed, place_piece_on_field, impossibilites};
 use crate::perm_gen::generate_perm_iter;
+
+use std::fmt::Write;
 
 #[derive(Copy, Clone)]
 pub struct PercentageOptions {
@@ -23,12 +25,29 @@ pub fn find_percentage(
     base_field: FieldMatrix,
     mut pieces: Vec<Piece>,
     options: PercentageOptions,
-) -> Result<f64, &'static str> {
-    let permutations = generate_perm_iter(&mut pieces);
+) -> Result<f64, String> {
+    let impossible_pieces = impossibilites(&pieces, &base_field);
     
+    if !impossible_pieces.is_empty() {
+        let mut err_string = String::from("impossible to place pieces:\n");
+        
+        for piece in impossible_pieces.iter() {
+            writeln!(
+                err_string,
+                "piece: {}, position: {}, {}",
+                piece.piece_type,
+                piece.position.0,
+                piece.position.1,
+            ).unwrap();
+        }
+
+        return Err(err_string)
+    }
+    
+    let permutations = generate_perm_iter(&mut pieces);
     let mut works_count = 0.0;
     let mut does_not_work_count = 0.0;
-
+    
     for permutation in permutations.into_iter() {
         
         if permutation_works(&base_field, permutation, options) {

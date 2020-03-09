@@ -20,15 +20,15 @@ fn main() {
             .required(true)
             .takes_value(true))
         .arg(Arg::with_name("no_softdrop")
-            .short("ns")
+            .short("S")
             .long("nosoftdrop")
             .help("put to not use softdrop when calculating"))
         .arg(Arg::with_name("no_hold")
-            .short("nh")
+            .short("H")
             .long("nohold")
             .help("put to not use hold when calculating"))
         .arg(Arg::with_name("no_rotation")
-            .short("nr")
+            .short("R")
             .long("norotation")
             .help("put to not use rotation/spins when calculating"))
         .get_matches();
@@ -50,15 +50,15 @@ fn main() {
 
     match piece::color_field_to_pieces(color_field) {
         Ok(pieces) => {
-            println!("{}%",
-            field::find_percentage(
+            match field::find_percentage(
                 base_field,
                 pieces,
                 options,
-            ).unwrap())
+            ) {
+                Ok(percent) => println!("{}%", percent),
+                Err(e) => println!("error: {}", e),
+            }
         },
-        Err(e) => {
-            println!("error: {}", e);
-        },
+        Err(e) => println!("error: {}", e),
     };
 }

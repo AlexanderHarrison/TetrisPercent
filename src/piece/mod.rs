@@ -1,6 +1,6 @@
 use crate::fieldmatrix::FieldMatrix;
 use crate::field::PercentageOptions;
-use std::fmt::Write;
+use std::fmt::{self, Write, Display, Formatter};
 
 pub mod piece_col;
 use piece_col::{PieceCollision, I, O, S, Z, L, J, T};
@@ -30,10 +30,6 @@ pub fn fumen_index_to_piece_type(i: u8) -> Result<PieceType, &'static str> {
     }
 }
 
-pub trait Rotate {
-    fn rotation(&mut self, rotation: Rotation);
-}
-
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum PieceType {
     S,
@@ -43,6 +39,22 @@ pub enum PieceType {
     T,
     O,
     I,
+}
+
+impl Display for PieceType {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", 
+            match self {
+                PieceType::S => "S",
+                PieceType::Z => "Z",
+                PieceType::O => "O",
+                PieceType::I => "I",
+                PieceType::T => "T",
+                PieceType::L => "L",
+                PieceType::J => "J",
+            }
+        )
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -311,9 +323,12 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
         None
     };
 
-    let test_piece_up =  |prev_piece: Piece| -> bool {
+    let test_piece_up =  |prev_piece: Piece| -> (bool, Piece) {
         let test_piece = prev_piece.clone_with_offset(0, 1);
-        piece_fits_over(test_piece, 0, &base_field).unwrap_or_default()
+        (
+            piece_fits_over(test_piece, 0, &base_field).unwrap_or_default(),
+            test_piece
+        )
     };
 
     let mut add_piece_up = |prev_piece: Piece| -> (bool, Piece) {
@@ -347,8 +362,9 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
             if works { return true }
 
             // if a new stem can be created do so
-            if test_piece_up(new_left_piece) {
-                if softdrop_stem_check(new_left_piece, &base_field) {
+            let (make_stem, new_stem_piece) = test_piece_up(new_left_piece);
+            if make_stem {
+                if softdrop_stem_check(new_stem_piece, &base_field) {
                     return true
                 }
             }
@@ -362,8 +378,9 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
             if works { return true }
 
             // if a new stem can be created do so
-            if test_piece_up(new_right_piece) {
-                if softdrop_stem_check(new_right_piece, &base_field) {
+            let (make_stem, new_stem_piece) = test_piece_up(new_right_piece);
+            if make_stem {
+                if softdrop_stem_check(new_stem_piece, &base_field) {
                     return true
                 }
             }
@@ -431,6 +448,22 @@ fn piece_check_offset(piece_type: PieceType) -> (isize, isize) {
     }
 }
 
-fn can_place(w: Option<bool>) -> bool {
-    w.unwrap_or_default()
+pub fn impossibilites(pieces: &Vec<Piece>, field: &FieldMatrix) -> Vec<Piece> {    
+    let mut impossible_pieces = Vec::new();
+    
+    for piece in pieces.iter() {
+        let mut piece_supported = false;
+        for (x, y) in piece_block_positions(*piece).unwrap().iter() {
+            if *y == 23 || field[*y + 1][*x] != 0 {
+                piece_supported = true;
+                break
+            }
+        }
+        if !piece_supported {
+            impossible_pieces.push(*piece);
+        }
+        // todo more impossible checks
+    }
+
+    impossible_pieces
 }
