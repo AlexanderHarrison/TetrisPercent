@@ -33,7 +33,6 @@ fn main() {
             .help("put to not use rotation/spins when calculating"))
         .get_matches();
         
-                
     let (fumen_field, _comment) = fumen::decode(
         matches.value_of("tetfu").unwrap()
     );
@@ -47,7 +46,7 @@ fn main() {
         !matches.is_present("no_rotation"),
         !matches.is_present("no_softdrop"),
     );
-
+    
     match piece::color_field_to_pieces(color_field) {
         Ok(pieces) => {
             let impossibilities = piece::impossibilites(&pieces, &fumen_field);
@@ -61,7 +60,6 @@ fn main() {
                 );
                 return
             }
-
             let percent = field::find_percentage(
                 base_field,
                 pieces,

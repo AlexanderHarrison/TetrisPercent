@@ -278,10 +278,13 @@ pub fn piece_can_be_placed(
     options: PercentageOptions,
 ) -> bool {
 
+    if empty_below_piece(piece, &base_field) {
+        return false
+    }
+
     if can_harddrop(piece, &base_field) {
         return true
     }
-    
     if options.soft_drop {
         softdrop_stem_check(piece, &base_field);
     }
@@ -345,6 +348,7 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
     // add all pieces up from the base piece to stem_positions until blocked
     // add_piece_up pushes to stem_positions
     let mut up_piece = base_piece;
+        
     loop {
         let (was_added, new_up_piece) = add_piece_up(up_piece);
         if !was_added { break }
@@ -392,6 +396,7 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
     false
 }
 
+// maybe remove redundant empty below piece check in can_harddrop
 pub fn can_harddrop(piece: Piece, field: &FieldMatrix) -> bool {
     let mut empty_space_below_piece = true;
 
@@ -415,6 +420,19 @@ pub fn can_harddrop(piece: Piece, field: &FieldMatrix) -> bool {
     }
 
     true
+}
+
+fn empty_below_piece(piece: Piece, field: &FieldMatrix) -> bool {
+    let mut empty_space_below_piece = true;
+    
+    for (x, y) in piece_block_positions(piece).unwrap().iter() {
+        if *y == 23 - BOTTOM_ROW_DISCARD_COUNT  || field[*y + 1][*x] != 0 {
+            empty_space_below_piece = false;
+            break
+        } 
+    }
+
+    empty_space_below_piece
 }
 
 pub fn place_piece_on_field(piece: Piece, field: &mut FieldMatrix) {
