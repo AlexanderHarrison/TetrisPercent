@@ -396,7 +396,7 @@ fn softdrop_stem_check(base_piece: Piece, base_field: &FieldMatrix) -> bool {
     false
 }
 
-// maybe remove redundant empty below piece check in can_harddrop
+// maybe remove semi-redundant empty below piece check in can_harddrop
 pub fn can_harddrop(piece: Piece, field: &FieldMatrix) -> bool {
     let mut empty_space_below_piece = true;
 

@@ -9,6 +9,19 @@ mod perm_gen;
 #[cfg(test)]
 mod tests;
 
+/* TODO:
+
+figure out how to implement spinning in calculations
+add --pattern method for custom piece drop orders
+figure out how to do the hold optimization
+verbose information
+bugfixing
+two pieces of same type can go in either spot
+
+caching softdrop paths? maybe if needed
+
+*/
+
 fn main() {
     let matches = App::new("Tetris setup percent finder")
         .version("0.1")
