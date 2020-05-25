@@ -14,16 +14,13 @@ const ASC_TABLE: &str = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTU
 
 pub type FieldData = [usize; 240];
 
-
 pub fn field_to_matrix(field: FieldData) -> FieldMatrix {
-    
     let mut matrix: FieldMatrix = [[0; 10]; 24];
-    
+
     for n in 0..240 {
-        matrix[n / 10][n % 10] = 
-        field[n].try_into().expect("Block in fumen not allowed");
+        matrix[n / 10][n % 10] = field[n].try_into().expect("Block in fumen not allowed");
     }
-        
+
     matrix
 }
 
@@ -44,7 +41,7 @@ pub fn decode(fumen_str: &str) -> (FieldMatrix, String) {
     while j < 240 {
         let val = data[i] + (data[i + 1] * 64);
         i += 2;
-        
+
         let run_len = (val % 240) + 1;
         let block = ((val / 240) % 17) - 8;
         for _ in 0..run_len {
@@ -70,8 +67,11 @@ pub fn decode(fumen_str: &str) -> (FieldMatrix, String) {
         let comment_len = (data[i] + (data[i + 1] * 64)) % 4096;
         i += 2;
         while comment.len() < comment_len {
-            val = data[i] + (data[i + 1] * 64) + (data[i + 2] * 4096) + (
-                data[i + 3] * 262144) + (data[i + 4] * 16777216);
+            val = data[i]
+                + (data[i + 1] * 64)
+                + (data[i + 2] * 4096)
+                + (data[i + 3] * 262144)
+                + (data[i + 4] * 16777216);
             i += 5;
             comment.push(ASC_TABLE.chars().nth(val % 96).unwrap());
             val = val / 96;
@@ -81,9 +81,9 @@ pub fn decode(fumen_str: &str) -> (FieldMatrix, String) {
             val = val / 96;
             comment.push(ASC_TABLE.chars().nth(val % 96).unwrap());
         }
-        comment = comment[..comment_len].to_string();  // strip padding
+        comment = comment[..comment_len].to_string(); // strip padding
 
-        // note: fumen uses unescape to support unicode, 
+        // note: fumen uses unescape to support unicode,
         // but I'm not going to bother trying to simulate unescape.
         // handle %uxxxx
     }

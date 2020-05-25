@@ -1,6 +1,6 @@
 use crate::fieldmatrix::FieldMatrix;
-use crate::piece::{Piece, piece_can_be_placed, place_piece_on_field};
 use crate::perm_gen::generate_perm_iter;
+use crate::piece::{piece_can_be_placed, place_piece_on_field, Piece};
 
 pub const BOTTOM_ROW_DISCARD_COUNT: usize = 1;
 
@@ -25,13 +25,12 @@ pub fn find_percentage(
     base_field: FieldMatrix,
     mut pieces: Vec<Piece>,
     options: PercentageOptions,
-) -> f64 {    
+) -> f64 {
     let permutations = generate_perm_iter(&mut pieces);
     let mut works_count = 0.0;
     let mut does_not_work_count = 0.0;
-    
+
     for permutation in permutations.into_iter() {
-        
         if permutation_works(&base_field, permutation, options) {
             works_count += 1.0;
         } else {
@@ -45,18 +44,14 @@ pub fn find_percentage(
 fn permutation_works(
     base_field: &FieldMatrix,
     piece_perm: Vec<Piece>,
-    options: PercentageOptions
+    options: PercentageOptions,
 ) -> bool {
     let mut field = base_field.clone();
     for piece in piece_perm.iter() {
-        if piece_can_be_placed(
-            *piece,
-            &field,
-            options,
-        ) {
+        if piece_can_be_placed(*piece, &field, options) {
             place_piece_on_field(*piece, &mut field);
         } else {
-            return false
+            return false;
         }
     }
 
@@ -88,19 +83,16 @@ fn get_color(mut matrix: FieldMatrix) -> FieldMatrix {
 
 pub fn discard_bottom(mut field: FieldMatrix) -> (FieldMatrix, Vec<[u8; 10]>) {
     let mut old_rows = Vec::new();
-    
+
     for i in 0..BOTTOM_ROW_DISCARD_COUNT {
         let u_index = (23 - i) as usize;
-        
-        old_rows.push(
-            field[u_index].clone()
-        );
+
+        old_rows.push(field[u_index].clone());
 
         for block in field[u_index].iter_mut() {
             *block = 0;
         }
     }
-    
 
     (field, old_rows)
 }

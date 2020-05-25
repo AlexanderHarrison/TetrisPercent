@@ -18,8 +18,7 @@ fn test_piece_block_positions() {
 
     piece.position = (7, 16);
     piece.rotation = Rotation::Right;
-    assert!(piece_block_positions(piece) 
-        == Some(vec![(9, 16), (9, 17), (9, 18), (9, 19)]));
+    assert!(piece_block_positions(piece) == Some(vec![(9, 16), (9, 17), (9, 18), (9, 19)]));
 }
 
 #[test]
@@ -31,7 +30,7 @@ fn test_can_harddrop() {
     };
 
     let field = [[0; 10]; 24];
-    
+
     assert!(can_harddrop(piece, &field) == false);
 
     piece.position = (0, 22);
@@ -54,7 +53,7 @@ fn test_unused_points() {
 
     let mut field = [[0; 10]; 24];
     assert!(find_unused_points(&pieces, &field).len() == 0);
-    
+
     field[1][5] = 1;
     assert!(find_unused_points(&pieces, &field).len() == 0);
 

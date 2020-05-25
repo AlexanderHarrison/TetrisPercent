@@ -1,4 +1,3 @@
-
 pub type FieldMatrix = [[u8; 10]; 24];
 
 // maybe use if I need optimizations

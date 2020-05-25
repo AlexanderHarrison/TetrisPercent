@@ -4,12 +4,12 @@ pub struct ScoreKeeper {
 }
 
 impl ScoreKeeper {
-    pub fn new(size: usize) {
+    pub fn new(size: usize) -> ScoreKeeper {
         let data = Box<[None; size.fac]>
         
         ScoreKeeper {
             size,
             data,
-        }
+        };
     }
 }
