@@ -68,7 +68,7 @@ possibilites, or n! possibilites.
 specific bag, but a transformation of some other bag.**
 
 So I can take ABDC and apply 113 to it.
-Align them right justified.
+lign them right justified.
 ````
   A B D C
 +   1 1 3
@@ -77,6 +77,7 @@ Align them right justified.
 2. Shift the letter above that digit that many times to the left
 3. Set that digit to 0
 4. Repeat until all digits are 0
+
 ````
   A B D C
 +  (1)1 3
@@ -166,13 +167,15 @@ Do you see the pattern?
 If you don't I don't blame you. It can be hard to pin down.
 Essentially, it is the set of transformations where these two rules hold.
 1. Each digit n has at least n zeroes to the left of it
-2. There is one pseudozero at the very left that counts as a zero for rule 1
+2. There is one not visible pseudozero at the very left that counts as a zero for rule 1
 
 This method is complicated so I don't use it.
 There is simpler method for finding what implies a bag, and it is surprising.
 
 Notice how to initial bags are reverses of each other
 ````
+rev(ABC) -> CBA
+
 ABC <- ABC BAC BCA ACB
  00 <-  00  10  02  01
 
@@ -184,8 +187,8 @@ Since CBA is the reverse of ABC, what happens if we reverse the implies of CBA?
 
 ````
 CBA -> CBA CAB ACB BCA
-
-CBA -> ABC BAC BCA ACB (rev)
+             rev
+       ABC BAC BCA ACB
 
 ABC <- ABC BAC BCA ACB
 ````
@@ -228,4 +231,30 @@ for bag in bag_possibilities
 print(works / bag_possibilites.len())
 ````
 
-Thanks for coming to my Ted Talk.
+# Alternative
+Second representation only
+
+```
+ABC <- ABC BAC BCA ACB
+ 00 <-  00  10  11  01
+
+BAC <- BAC ABC ACB BCA
+ 00 <-  00  10  11  01
+
+CAB <- CAB ACB ABC CBA
+ 00 <-  00  10  11  01
+
+ABC ACB CAB BAC BCA CBA
+ 00  01  02  10  11  12
+```
+
+first pass:
+  get bags that work without hold
+
+second pass:
+  for each bag:
+    compute what implies this bag
+    if any of those are in the bags that work without hold, then add the works total
+
+the works total is how many bags with hold work
+

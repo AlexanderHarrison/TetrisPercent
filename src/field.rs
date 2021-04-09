@@ -23,27 +23,32 @@ impl PercentageOptions {
 
 pub fn find_percentage(
     base_field: FieldMatrix,
-    mut pieces: Vec<Piece>,
+    pieces: Vec<Piece>,
     options: PercentageOptions,
 ) -> f64 {
-    let permutations = generate_perm_iter(&mut pieces);
-    let mut works_count = 0.0;
-    let mut does_not_work_count = 0.0;
+    let mut perm_pieces = pieces.clone();
+    let permutations = generate_perm_iter(&mut perm_pieces);
+    let mut permutation_count: u64 = 0;
 
-    for permutation in permutations.into_iter() {
-        if permutation_works(&base_field, permutation, options) {
-            works_count += 1.0;
-        } else {
-            does_not_work_count += 1.0;
-        }
-    }
+    let works_perms_no_hold = permutations
+        .filter(|perm| {
+            permutation_count += 1;
+            permutation_works(&base_field, &perm, options)
+        })
+        .collect::<Vec<Vec<Piece>>>();
 
-    works_count / (works_count + does_not_work_count) * 100.0
+    let works_count = if options.hold {
+        crate::hold_comp::compute_with_hold(pieces, works_perms_no_hold)
+    } else {
+        works_perms_no_hold.len() as u64
+    };
+
+    works_count as f64 / permutation_count as f64 * 100.0
 }
 
 fn permutation_works(
     base_field: &FieldMatrix,
-    piece_perm: Vec<Piece>,
+    piece_perm: &Vec<Piece>,
     options: PercentageOptions,
 ) -> bool {
     let mut field = base_field.clone();

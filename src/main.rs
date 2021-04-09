@@ -5,7 +5,8 @@ mod fieldmatrix;
 mod fumen;
 mod perm_gen;
 mod piece;
-//mod constraints;
+mod bag;
+mod hold_comp;
 
 #[cfg(test)]
 mod tests;
